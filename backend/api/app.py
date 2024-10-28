@@ -3,8 +3,11 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
 from backend.models.models import ForwardCurve, Session
+from backend.etl.etl import run_etl  # Import the ETL function
 import logging
 import sys
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import cast, Date
 
 app = Flask(__name__)
 CORS(app)
@@ -33,28 +36,44 @@ def get_sofr_rates():
     finally:
         session.close()
 
-def calculate_interest_rate(maturity_date, rate_floor, rate_ceiling, rate_spread):
-    """Calculate interest rates based on provided parameters."""
+def calculate_interest_rate( maturity_date, rate_floor, rate_ceiling, rate_spread):
+    """Calculate interest rates based on stored SOFR rates and loan parameters."""
     logging.info("Calculating interest rates with given parameters.")
+    session = Session()
+
+    # Convert the maturity date to a datetime object
     try:
         maturity_date_obj = datetime.strptime(maturity_date, "%m/%d/%Y").date()
     except ValueError:
         logging.error("Invalid maturity date format provided.")
         return []
 
+    # Initialize result list and start date
     result = []
     start_date = datetime.now().date()
-    while start_date <= maturity_date_obj:
-        days_to_maturity = (maturity_date_obj - start_date).days
-        rate = max(rate_floor, min(rate_ceiling, rate_floor + rate_spread * (days_to_maturity / 365)))
 
+    # Query rates from the database for dates >= start_date, ordered by date
+    rates = session.query(ForwardCurve).filter(
+        cast(ForwardCurve.reset_date, Date) >= start_date
+    ).order_by(cast(ForwardCurve.reset_date, Date)).all()
+
+
+    rate_index = 0
+    while start_date <= maturity_date_obj and rate_index < len(rates):
+        sofr_rate = rates[rate_index].one_month_sofr
+
+        # Calculate final rate and apply floor/ceiling constraints
+        final_rate = min(rate_ceiling, max(rate_floor, sofr_rate + rate_spread))
+
+        # Append date and rate to results
         result.append({
-            "date": start_date.strftime("%m/%d/%Y"),
-            "rate": round(rate, 6)
+            "date": start_date.strftime("%Y-%m-%d"),
+            "rate": round(final_rate, 6)
         })
 
-        # Increment start_date by about one month
-        start_date += timedelta(days=30)  # Simplified month increment
+        # Increment to the next month
+        start_date += relativedelta(months=1)
+        rate_index += 1  # Move to the next rate in the list
 
     logging.info(f"Generated interest rates for {len(result)} months.")
     return result
@@ -111,5 +130,7 @@ def calculate_rates():
     return jsonify(result), 200
 
 if __name__ == '__main__':
+    logging.info("Running ETL process before starting the Flask app.")
+    run_etl()  # Run the ETL process
     logging.info("Starting Flask app.")
     app.run(host='0.0.0.0', port=5000, debug=True)

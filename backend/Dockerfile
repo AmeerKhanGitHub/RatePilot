@@ -12,9 +12,6 @@ RUN pip install -r requirements.txt
 # Copy app files
 COPY . ./backend
 
-# Run ETL as part of build
-RUN python backend/etl/etl.py
-
 # Run tests
 RUN pytest backend/etl/tests/ backend/api/tests/
 

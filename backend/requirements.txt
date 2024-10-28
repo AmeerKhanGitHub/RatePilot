@@ -1,9 +1,9 @@
-Flask                # Flask web framework
-Flask-SQLAlchemy    # SQLAlchemy integration for Flask
-SQLAlchemy           # Core SQLAlchemy library
-psycopg2-binary      # PostgreSQL adapter for Python
-requests            # For making HTTP requests (e.g., in ETL jobs)
-python-dotenv        # For managing environment variables from .env files
-pytest
+Flask
+Flask-SQLAlchemy
+SQLAlchemy
+psycopg2-binary
 requests
+python-dotenv
+pytest
 flask-cors
+python-dateutil

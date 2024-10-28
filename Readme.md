@@ -18,13 +18,7 @@ A web-based dashboard for calculating loan interest rates based on parameters su
 
 ## Setup and Running with Docker
 
-1. **Create a `.env` file** in the root directory with environment variables for PostgreSQL:
-   ```plaintext
-   POSTGRES_USER=your_user
-   POSTGRES_PASSWORD=your_password
-   POSTGRES_DB=your_db
-
-2. **Start the services** with Docker Compose:
+1. **Start the services** with Docker Compose:
     ```bash 
    docker-compose up --build
 The backend will be available at http://localhost:5000 and the frontend at http://localhost:3000.
@@ -40,7 +34,11 @@ The backend will be available at http://localhost:5000 and the frontend at http:
    ```bash
    export DATABASE_URL=sqlite:///test.db
 
-3. **Run the Flask server:**
+3. **Run the ETL script:**
+   ```bash
+   python backend/etl/etl.py
+
+4. **Run the Flask server:**
    ```bash
    python backend/api/app.py
 
@@ -52,7 +50,7 @@ The backend will be available at http://localhost:5000 and the frontend at http:
 
 2. **Start the React development server:**
    ```bash
-   export DATABASE_URL=sqlite:///test.db
+   npm start
 
 ## API Endpoints
 
