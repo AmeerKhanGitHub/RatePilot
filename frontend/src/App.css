@@ -1,0 +1,27 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  transition: opacity 0.5s ease-in-out; /* Transition effect */
+}
+
+.App > div {
+  transition: opacity 0.5s ease-in-out;
+}
+
+form {
+  opacity: 1; /* Fully visible by default */
+}
+
+.chart {
+  opacity: 1; /* Fully visible by default */
+}
+
+.fade-out {
+  opacity: 0; /* Fade out */
+}
+
+.fade-in {
+  opacity: 1; /* Fade in */
+}
